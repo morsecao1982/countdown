@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>State Tournament Countdown</title>
+<style>
+  :root {
+    --bg1: #091527;
+    --bg2: #0d2440;
+    --gold: #f5a623;
+    --gold-soft: #ffd27a;
+    --steel: #5c89b8;
+    --steel-deep: #2c4f78;
+    --green: #4ade80;
+    --text: #eef3fb;
+    --text-dim: #93a4c2;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg1);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* Aurora-style shifting color wash — constant gentle motion doubles as
+     anti-idle-screensaver insurance when cast to a TV via catt. */
+  .bg {
+    position: absolute;
+    inset: -25%;
+    z-index: -3;
+    background:
+      radial-gradient(circle at 15% 25%, rgba(44,79,120,0.55), transparent 50%),
+      radial-gradient(circle at 85% 20%, rgba(92,137,184,0.3), transparent 50%),
+      radial-gradient(circle at 25% 85%, rgba(245,166,35,0.12), transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(44,79,120,0.4), transparent 50%),
+      linear-gradient(135deg, var(--bg1), var(--bg2) 60%, #081220 100%);
+    animation: drift 44s ease-in-out infinite alternate;
+    filter: saturate(1);
+  }
+  @keyframes drift {
+    0%   { transform: translate(0%, 0%) scale(1) rotate(0deg); }
+    50%  { transform: translate(-5%, 4%) scale(1.1) rotate(4deg); }
+    100% { transform: translate(4%, -3%) scale(1.05) rotate(-3deg); }
+  }
+
+  .stars {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background-image:
+      radial-gradient(1.6px 1.6px at 10% 20%, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 80% 15%, var(--steel), transparent),
+      radial-gradient(1.2px 1.2px at 60% 80%, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 30% 65%, var(--gold-soft), transparent),
+      radial-gradient(1.2px 1.2px at 90% 55%, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 45% 40%, var(--gold-soft), transparent),
+      radial-gradient(1.2px 1.2px at 70% 92%, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 5% 75%, var(--steel), transparent),
+      radial-gradient(1.2px 1.2px at 95% 35%, #fff, transparent);
+    opacity: 0.6;
+    animation: twinkle 4s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle {
+    0%   { opacity: 0.4; }
+    100% { opacity: 0.75; }
+  }
+
+  /* Rising bubbles — colorful, continuous upward drift for extra motion */
+  .bubbles {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .bubble {
+    position: absolute;
+    bottom: -10%;
+    border-radius: 50%;
+    opacity: 0.22;
+    filter: blur(0.5px);
+    animation: rise linear infinite;
+  }
+  @keyframes rise {
+    0%   { transform: translateY(0) translateX(0); opacity: 0; }
+    10%  { opacity: 0.4; }
+    90%  { opacity: 0.25; }
+    100% { transform: translateY(-115vh) translateX(var(--drift, 30px)); opacity: 0; }
+  }
+
+  /* Floating science iconography around the edges of the screen */
+  .float-icon {
+    position: absolute;
+    filter: drop-shadow(0 0 14px var(--glow, rgba(255,255,255,0.5)));
+    animation: bob var(--dur, 10s) ease-in-out infinite;
+    opacity: 0.9;
+    z-index: 0;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(var(--bx, 12px), var(--by, -18px)) rotate(var(--br, 8deg)); }
+  }
+
+  .wrap {
+    text-align: center;
+    padding: 4vh 4vw;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+  }
+
+  .eyebrow {
+    font-size: clamp(14px, 1.6vw, 22px);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 1.2vh;
+    color: var(--gold-soft);
+  }
+
+  .team {
+    font-size: clamp(18px, 2.2vw, 30px);
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-bottom: 3vh;
+    letter-spacing: 0.04em;
+  }
+
+  .days-number {
+    font-size: clamp(120px, 20vw, 320px);
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--text) 0%, var(--gold-soft) 55%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 40px rgba(245,166,35,0.3)) drop-shadow(0 0 16px rgba(92,137,184,0.25));
+  }
+
+  .days-label {
+    font-size: clamp(20px, 2.6vw, 40px);
+    color: var(--gold);
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-top: 0.5vh;
+    text-shadow: 0 0 20px rgba(245,166,35,0.5);
+  }
+
+  .sub-clock {
+    margin-top: 5vh;
+    display: inline-flex;
+    gap: clamp(16px, 3vw, 48px);
+    font-variant-numeric: tabular-nums;
+  }
+  .sub-clock .unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .sub-clock .val {
+    font-size: clamp(28px, 4vw, 56px);
+    font-weight: 700;
+    color: var(--text);
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--accent, rgba(255,255,255,0.18));
+    border-radius: 14px;
+    padding: 0.3em 0.5em;
+    min-width: 1.8em;
+    box-shadow: 0 0 22px var(--glow2, rgba(255,255,255,0.08));
+  }
+  .unit.hrs .val  { --accent: rgba(92,137,184,0.5);  --glow2: rgba(92,137,184,0.2); }
+  .unit.mins .val { --accent: rgba(245,166,35,0.45); --glow2: rgba(245,166,35,0.15); }
+  .unit.secs .val { --accent: rgba(92,137,184,0.5);  --glow2: rgba(92,137,184,0.2); }
+  .sub-clock .lbl {
+    margin-top: 0.6vh;
+    font-size: clamp(11px, 1vw, 14px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .target-date {
+    margin-top: 5vh;
+    font-size: clamp(16px, 1.8vw, 26px);
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+  .target-date strong {
+    color: var(--gold-soft);
+    font-weight: 700;
+  }
+
+  .done {
+    font-size: clamp(48px, 7vw, 100px);
+    font-weight: 800;
+    color: var(--gold);
+    text-shadow: 0 0 50px rgba(245,166,35,0.5);
+  }
+
+  .status-dot {
+    position: fixed;
+    bottom: 18px;
+    right: 22px;
+    font-size: 12px;
+    color: var(--text-dim);
+    opacity: 0.5;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 3;
+  }
+  .status-dot .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+  }
+  .status-dot.off .dot {
+    background: #777;
+    box-shadow: none;
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="stars"></div>
+  <div class="bubbles" id="bubbles"></div>
+
+  <!-- Floating science iconography — gold / steel-blue duotone -->
+  <svg class="float-icon" style="top:8%; left:6%; width:min(9vw,110px); --dur:14s; --bx:12px; --by:-10px; --br:6deg; --glow: rgba(92,137,184,0.45);" viewBox="0 0 64 64" fill="none">
+    <circle cx="32" cy="32" r="4.5" fill="#f5a623"/>
+    <ellipse cx="32" cy="32" rx="26" ry="10" stroke="#5c89b8" stroke-width="2.5" transform="rotate(0 32 32)"/>
+    <ellipse cx="32" cy="32" rx="26" ry="10" stroke="#5c89b8" stroke-width="2.5" transform="rotate(60 32 32)"/>
+    <ellipse cx="32" cy="32" rx="26" ry="10" stroke="#5c89b8" stroke-width="2.5" transform="rotate(120 32 32)"/>
+  </svg>
+
+  <svg class="float-icon" style="top:14%; right:7%; width:min(7vw,90px); --dur:12s; --bx:-10px; --by:12px; --br:-6deg; --glow: rgba(245,166,35,0.45);" viewBox="0 0 64 64" fill="none">
+    <path d="M26 6h12v14l14 28a6 6 0 0 1-5.4 8.6H17.4A6 6 0 0 1 12 48l14-28V6z" stroke="#f5a623" stroke-width="2.5" fill="rgba(245,166,35,0.12)"/>
+    <path d="M20 40h24" stroke="#f5a623" stroke-width="2"/>
+    <circle cx="27" cy="48" r="2" fill="#5c89b8"/>
+    <circle cx="35" cy="52" r="2.5" fill="#5c89b8"/>
+    <circle cx="31" cy="44" r="1.6" fill="#5c89b8"/>
+  </svg>
+
+  <svg class="float-icon" style="bottom:12%; left:8%; width:min(8vw,100px); --dur:16s; --bx:10px; --by:10px; --br:5deg; --glow: rgba(92,137,184,0.45);" viewBox="0 0 64 64" fill="none">
+    <path d="M16 8c0 14 32 14 32 28s-32 14-32 28" stroke="#5c89b8" stroke-width="2.5"/>
+    <path d="M48 8c0 14-32 14-32 28s32 14 32 28" stroke="#f5a623" stroke-width="2.5"/>
+    <circle cx="16" cy="8" r="2.5" fill="#5c89b8"/>
+    <circle cx="48" cy="8" r="2.5" fill="#f5a623"/>
+    <circle cx="32" cy="22" r="2.5" fill="#5c89b8"/>
+    <circle cx="32" cy="42" r="2.5" fill="#f5a623"/>
+    <circle cx="16" cy="56" r="2.5" fill="#5c89b8"/>
+    <circle cx="48" cy="56" r="2.5" fill="#f5a623"/>
+  </svg>
+
+  <svg class="float-icon" style="bottom:10%; right:9%; width:min(8vw,100px); --dur:13s; --bx:-12px; --by:-8px; --br:-6deg; --glow: rgba(92,137,184,0.45);" viewBox="0 0 64 64" fill="none">
+    <path d="M32 4c10 8 10 20 6 28l2 10h-16l2-10c-4-8-4-20 6-28z" fill="rgba(92,137,184,0.12)" stroke="#5c89b8" stroke-width="2.5"/>
+    <path d="M24 42l-6 14M40 42l6 14M28 50h8" stroke="#f5a623" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="32" cy="18" r="4" fill="#f5a623"/>
+  </svg>
+
+  <svg class="float-icon" style="top:46%; left:3%; width:min(6vw,76px); --dur:10s; --bx:8px; --by:-8px; --br:10deg; --glow: rgba(92,137,184,0.4);" viewBox="0 0 64 64" fill="none">
+    <circle cx="32" cy="32" r="10" stroke="#5c89b8" stroke-width="2.5"/>
+    <g stroke="#5c89b8" stroke-width="2.5">
+      <path d="M32 6v8M32 50v8M6 32h8M50 32h8"/>
+      <path d="M13 13l6 6M45 45l6 6M51 13l-6 6M19 45l-6 6"/>
+    </g>
+  </svg>
+
+  <svg class="float-icon" style="top:50%; right:3%; width:min(6vw,76px); --dur:15s; --bx:-8px; --by:10px; --br:-8deg; --glow: rgba(245,166,35,0.4);" viewBox="0 0 64 64" fill="none">
+    <circle cx="26" cy="26" r="16" stroke="#f5a623" stroke-width="3" fill="rgba(245,166,35,0.08)"/>
+    <path d="M37 37l16 16" stroke="#f5a623" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+
+  <div class="wrap">
+    <div class="eyebrow">Science Olympiad</div>
+    <div class="team">Haycock &middot; State Tournament Countdown</div>
+
+    <div id="countdown-main">
+      <div class="days-number" id="days-number">—</div>
+      <div class="days-label">Days To Go</div>
+    </div>
+
+    <div class="sub-clock" id="sub-clock">
+      <div class="unit hrs"><div class="val" id="hrs">00</div><div class="lbl">Hours</div></div>
+      <div class="unit mins"><div class="val" id="mins">00</div><div class="lbl">Minutes</div></div>
+      <div class="unit secs"><div class="val" id="secs">00</div><div class="lbl">Seconds</div></div>
+    </div>
+
+    <div class="target-date">State Tournament &middot; <strong>Saturday, April 10, 2027</strong></div>
+  </div>
+
+  <div class="status-dot off" id="wake-status">
+    <span class="dot"></span><span id="wake-text">wake lock: --</span>
+  </div>
+
+  <!-- Silent, invisible, continuously-playing video as a fallback keep-awake
+       trick for browsers/contexts where the Wake Lock API is unavailable
+       (older Chromecast receivers, some embedded Chrome builds). -->
+  <video id="nosleep-video" muted playsinline loop style="position:fixed; width:1px; height:1px; opacity:0.01; pointer-events:none;"></video>
+
+  <script>
+    const TARGET = new Date('2027-04-10T00:00:00');
+
+    const daysEl = document.getElementById('days-number');
+    const hrsEl = document.getElementById('hrs');
+    const minsEl = document.getElementById('mins');
+    const secsEl = document.getElementById('secs');
+    const mainBlock = document.getElementById('countdown-main');
+    const subClock = document.getElementById('sub-clock');
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function tick() {
+      const now = new Date();
+      const diff = TARGET - now;
+
+      if (diff <= 0) {
+        mainBlock.innerHTML = '<div class="done">🏆 It\'s Tournament Day!</div>';
+        subClock.style.display = 'none';
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      daysEl.textContent = days.toLocaleString('en-US');
+      hrsEl.textContent = pad(hours);
+      minsEl.textContent = pad(minutes);
+      secsEl.textContent = pad(seconds);
+    }
+
+    tick();
+    setInterval(tick, 1000);
+
+    // --- Colorful rising bubbles (purely decorative + anti-idle motion) ---
+    (function spawnBubbles() {
+      const host = document.getElementById('bubbles');
+      const colors = ['#5c89b8', '#f5a623'];
+      const count = 16;
+      for (let i = 0; i < count; i++) {
+        const b = document.createElement('div');
+        b.className = 'bubble';
+        const size = 6 + Math.random() * 22;
+        const left = Math.random() * 100;
+        const dur = 14 + Math.random() * 16;
+        const delay = Math.random() * -30;
+        const drift = (Math.random() * 120 - 60) + 'px';
+        const color = colors[i % colors.length];
+        b.style.width = size + 'px';
+        b.style.height = size + 'px';
+        b.style.left = left + 'vw';
+        b.style.background = color;
+        b.style.boxShadow = '0 0 ' + (size * 1.2) + 'px ' + color;
+        b.style.setProperty('--drift', drift);
+        b.style.animationDuration = dur + 's';
+        b.style.animationDelay = delay + 's';
+        host.appendChild(b);
+      }
+    })();
+
+    // --- Keep the display awake while this page is cast/shown ---
+    const wakeDot = document.getElementById('wake-status');
+    const wakeText = document.getElementById('wake-text');
+    let wakeLock = null;
+
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakeDot.classList.remove('off');
+          wakeText.textContent = 'wake lock: active';
+          wakeLock.addEventListener('release', () => {
+            wakeDot.classList.add('off');
+            wakeText.textContent = 'wake lock: released';
+          });
+        } else {
+          wakeText.textContent = 'wake lock: unsupported (using video fallback)';
+        }
+      } catch (err) {
+        wakeText.textContent = 'wake lock: unavailable (using video fallback)';
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') requestWakeLock();
+    });
+
+    requestWakeLock();
+
+    // Fallback: a silent, looping, nearly-invisible video keeps many
+    // browsers/OSes from screen-blanking even without the Wake Lock API.
+    (function setupNoSleepFallback() {
+      const video = document.getElementById('nosleep-video');
+      const source = document.createElement('source');
+      // Minimal 1-frame black mp4, base64-encoded, looped indefinitely.
+      source.src = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAr1tZGF0AAACrgYF//+q3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE2NCByMzA5NSBiYWVlNDAwIC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAyMiAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYWRzPTEgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIGJfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAAD2WIhAA3//728P4FNjuY0JcRzeidMx+/FvpUwAAAAwAAAwAK0jMKQZ6BgQAAAAoBnpi0XKQAWMMAAAAAHEGaRGxSEFsmUCCn/5l9BwAAAAMAAAMAAg4AAAAJQZ5iRTGiQAAeAAAACQGegUUxogAAHgAAAAkBnoNFMaIAAB4AAAAHQZqLUmoQWyZQAAAAAwAAAwACigAAAAlBnoRFFSo8AAAeAAAACQGeo0UVKgAAHgAAAAcBnqVFFSoAAB4AAAAHQZrNRRUqgAAAAwAAAwACigAAAAlBnutFESoQAB4AAAAJAZ8KUSoAAB4AAAAHAZ7MUSoQAB4';
+      video.appendChild(source);
+      video.play().catch(() => {});
+    })();
+  </script>
+</body>
+</html>

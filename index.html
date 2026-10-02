@@ -426,16 +426,20 @@
     // --- Google Cast Receiver SDK -----------------------------------------
     // Only relevant when this page is launched as a registered Cast "Custom
     // Receiver" app (i.e. opened directly by a Chromecast, not a regular
-    // browser tab). Harmless no-op otherwise. Starting the receiver context
-    // and setting a long maxInactivity keeps the app running indefinitely
-    // even with no sender connected, so it survives the casting computer
-    // being turned off after launch.
+    // browser tab). Harmless no-op otherwise.
+    //
+    // disableIdleTimeout is the key setting here: by default CAF closes a
+    // receiver app shortly after it has no connected sender, which is
+    // exactly what happens right after our one-shot launcher script exits.
+    // Disabling that is what lets the app keep running indefinitely with no
+    // sender attached, so it survives the casting computer being turned off.
     (function setupCastReceiver() {
       if (!window.cast || !window.cast.framework) return;
       try {
         const context = cast.framework.CastReceiverContext.getInstance();
         context.start({
-          maxInactivity: 60 * 60 * 24 * 30 // 30 days
+          disableIdleTimeout: true,
+          maxInactivity: 60 * 60 * 24 * 30 // 30 days, belt-and-suspenders
         });
       } catch (err) {
         console.warn('Cast receiver context failed to start', err);

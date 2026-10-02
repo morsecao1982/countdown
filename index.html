@@ -115,18 +115,24 @@
 
   .wrap {
     text-align: center;
-    padding: 4vh 4vw;
     width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    padding: 2vh 4vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.4vh;
     position: relative;
     z-index: 2;
   }
 
   .so-logo {
     display: block;
-    height: clamp(56px, 8vh, 96px);
+    height: clamp(100px, 17vh, 260px);
     width: auto;
-    margin: 0 auto 2.4vh;
-    filter: drop-shadow(0 0 14px rgba(255,255,255,0.15));
+    filter: drop-shadow(0 0 18px rgba(255,255,255,0.18));
   }
 
   .eyebrow {
@@ -134,15 +140,13 @@
     letter-spacing: 0.35em;
     text-transform: uppercase;
     font-weight: 700;
-    margin-bottom: 1.2vh;
     color: var(--gold-soft);
   }
 
   .team {
-    font-size: clamp(18px, 2.2vw, 30px);
+    font-size: clamp(16px, 2vw, 26px);
     color: var(--text-dim);
     font-weight: 500;
-    margin-bottom: 3vh;
     letter-spacing: 0.04em;
   }
 
@@ -153,12 +157,11 @@
     display: inline-flex;
     align-items: baseline;
     gap: 0.5em;
-    margin-bottom: 3.5vh;
-    padding: 0.6em 1.3em;
+    padding: 0.5em 1.2em;
     background: rgba(74,222,128,0.07);
     border: 1px solid rgba(74,222,128,0.4);
     border-radius: 999px;
-    font-size: clamp(16px, 1.8vw, 26px);
+    font-size: clamp(14px, 1.6vw, 22px);
   }
   .mini-countdown .mini-label {
     color: var(--text-dim);
@@ -187,7 +190,7 @@
   }
 
   .days-number {
-    font-size: clamp(120px, 20vw, 320px);
+    font-size: clamp(90px, 15vw, 230px);
     font-weight: 800;
     line-height: 1;
     font-variant-numeric: tabular-nums;
@@ -210,9 +213,8 @@
   }
 
   .sub-clock {
-    margin-top: 5vh;
     display: inline-flex;
-    gap: clamp(16px, 3vw, 48px);
+    gap: clamp(14px, 2.6vw, 40px);
     font-variant-numeric: tabular-nums;
   }
   .sub-clock .unit {
@@ -221,13 +223,13 @@
     align-items: center;
   }
   .sub-clock .val {
-    font-size: clamp(28px, 4vw, 56px);
+    font-size: clamp(22px, 3.2vw, 44px);
     font-weight: 700;
     color: var(--text);
     background: rgba(20,35,58,0.75);
     border: 1px solid var(--accent, rgba(255,255,255,0.18));
-    border-radius: 14px;
-    padding: 0.3em 0.5em;
+    border-radius: 12px;
+    padding: 0.25em 0.45em;
     min-width: 1.8em;
     box-shadow: 0 0 22px var(--glow2, rgba(255,255,255,0.08));
   }
@@ -243,8 +245,7 @@
   }
 
   .target-date {
-    margin-top: 5vh;
-    font-size: clamp(16px, 1.8vw, 26px);
+    font-size: clamp(14px, 1.6vw, 22px);
     color: var(--text-dim);
     letter-spacing: 0.1em;
   }

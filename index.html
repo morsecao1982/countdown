@@ -138,6 +138,43 @@
     letter-spacing: 0.04em;
   }
 
+  /* Secondary, smaller countdown for the nearer-term invitational */
+  .mini-countdown {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5em;
+    margin-bottom: 3.5vh;
+    padding: 0.5em 1.1em;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(92,137,184,0.35);
+    border-radius: 999px;
+    font-size: clamp(13px, 1.3vw, 18px);
+  }
+  .mini-countdown .mini-label {
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.85em;
+  }
+  .mini-countdown .mini-days {
+    font-weight: 800;
+    color: var(--gold-soft);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.3em;
+  }
+  .mini-countdown .mini-suffix {
+    color: var(--text-dim);
+    font-size: 0.85em;
+  }
+  .mini-countdown .mini-date {
+    color: var(--text-dim);
+    font-size: 0.8em;
+    opacity: 0.75;
+    border-left: 1px solid rgba(255,255,255,0.15);
+    padding-left: 0.8em;
+    margin-left: 0.2em;
+  }
+
   .days-number {
     font-size: clamp(120px, 20vw, 320px);
     font-weight: 800;
@@ -292,11 +329,18 @@
 
   <div class="wrap">
     <div class="eyebrow">Science Olympiad</div>
-    <div class="team">Haycock &middot; State Tournament Countdown</div>
+    <div class="team">Haycock &middot; Tournament Countdowns</div>
+
+    <div class="mini-countdown" id="mini-countdown">
+      <span class="mini-label">Lake Braddock Invitational</span>
+      <span class="mini-days" id="mini-days">—</span>
+      <span class="mini-suffix">days</span>
+      <span class="mini-date">Sat, Dec 5, 2026</span>
+    </div>
 
     <div id="countdown-main">
       <div class="days-number" id="days-number">—</div>
-      <div class="days-label">Days To Go</div>
+      <div class="days-label">Days To State Tournament</div>
     </div>
 
     <div class="sub-clock" id="sub-clock">
@@ -337,6 +381,7 @@
     })();
 
     const TARGET = new Date('2027-04-10T00:00:00');
+    const TARGET_LB = new Date('2026-12-05T00:00:00');
 
     const daysEl = document.getElementById('days-number');
     const hrsEl = document.getElementById('hrs');
@@ -344,6 +389,8 @@
     const secsEl = document.getElementById('secs');
     const mainBlock = document.getElementById('countdown-main');
     const subClock = document.getElementById('sub-clock');
+    const miniCountdown = document.getElementById('mini-countdown');
+    const miniDaysEl = document.getElementById('mini-days');
 
     function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -354,19 +401,26 @@
       if (diff <= 0) {
         mainBlock.innerHTML = '<div class="done">🏆 It\'s Tournament Day!</div>';
         subClock.style.display = 'none';
-        return;
+      } else {
+        const totalSeconds = Math.floor(diff / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        daysEl.textContent = days.toLocaleString('en-US');
+        hrsEl.textContent = pad(hours);
+        minsEl.textContent = pad(minutes);
+        secsEl.textContent = pad(seconds);
       }
 
-      const totalSeconds = Math.floor(diff / 1000);
-      const days = Math.floor(totalSeconds / 86400);
-      const hours = Math.floor((totalSeconds % 86400) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-
-      daysEl.textContent = days.toLocaleString('en-US');
-      hrsEl.textContent = pad(hours);
-      minsEl.textContent = pad(minutes);
-      secsEl.textContent = pad(seconds);
+      const lbDiff = TARGET_LB - now;
+      if (lbDiff <= 0) {
+        miniCountdown.innerHTML = '<span class="mini-label">Lake Braddock Invitational</span><span class="mini-suffix" style="margin-left:0.3em;">✓ Complete</span>';
+      } else {
+        const lbDays = Math.floor(lbDiff / 86400000);
+        miniDaysEl.textContent = lbDays.toLocaleString('en-US');
+      }
     }
 
     tick();

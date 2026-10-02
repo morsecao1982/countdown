@@ -121,6 +121,14 @@
     z-index: 2;
   }
 
+  .so-logo {
+    display: block;
+    height: clamp(56px, 8vh, 96px);
+    width: auto;
+    margin: 0 auto 2.4vh;
+    filter: drop-shadow(0 0 14px rgba(255,255,255,0.15));
+  }
+
   .eyebrow {
     font-size: clamp(14px, 1.6vw, 22px);
     letter-spacing: 0.35em;
@@ -330,7 +338,7 @@
   </svg>
 
   <div class="wrap">
-    <div class="eyebrow">Science Olympiad</div>
+    <img class="so-logo" src="img/so-logo.png" alt="Science Olympiad logo">
     <div class="team">Haycock &middot; Tournament Countdowns</div>
 
     <div class="mini-countdown" id="mini-countdown">

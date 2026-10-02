@@ -312,15 +312,30 @@
     <span class="dot"></span><span id="wake-text">wake lock: --</span>
   </div>
 
-  <!-- Silent, invisible, continuously-playing video as a fallback keep-awake
-       trick for browsers/contexts where the Wake Lock API is unavailable
-       (older Chromecast receivers, some embedded Chrome builds). -->
-  <video id="nosleep-video" muted playsinline loop style="position:fixed; width:1px; height:1px; opacity:0.01; pointer-events:none;"></video>
-
   <!-- Must load before the script below, which calls cast.framework.* -->
-  <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/3.0.0/cast_receiver_framework.js"></script>
+  <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
 
   <script>
+    // Start the Cast receiver context FIRST, before anything else below,
+    // so a later runtime error elsewhere in this script (decorative bubble
+    // spawning, wake lock, etc.) can't prevent the receiver from ever
+    // signaling "ready" to the Cast platform — a previous version of this
+    // page had this at the bottom of the script and also used an invalid
+    // SDK URL (404), which caused the Cast platform's generic
+    // "Something went wrong" error screen instead of the countdown.
+    (function setupCastReceiver() {
+      if (!window.cast || !window.cast.framework) return;
+      try {
+        const context = cast.framework.CastReceiverContext.getInstance();
+        context.start({
+          disableIdleTimeout: true,
+          maxInactivity: 60 * 60 * 24 * 30 // 30 days, belt-and-suspenders
+        });
+      } catch (err) {
+        console.warn('Cast receiver context failed to start', err);
+      }
+    })();
+
     const TARGET = new Date('2027-04-10T00:00:00');
 
     const daysEl = document.getElementById('days-number');
@@ -399,10 +414,10 @@
             wakeText.textContent = 'wake lock: released';
           });
         } else {
-          wakeText.textContent = 'wake lock: unsupported (using video fallback)';
+          wakeText.textContent = 'wake lock: unsupported';
         }
       } catch (err) {
-        wakeText.textContent = 'wake lock: unavailable (using video fallback)';
+        wakeText.textContent = 'wake lock: unavailable';
       }
     }
 
@@ -411,40 +426,6 @@
     });
 
     requestWakeLock();
-
-    // Fallback: a silent, looping, nearly-invisible video keeps many
-    // browsers/OSes from screen-blanking even without the Wake Lock API.
-    (function setupNoSleepFallback() {
-      const video = document.getElementById('nosleep-video');
-      const source = document.createElement('source');
-      // Minimal 1-frame black mp4, base64-encoded, looped indefinitely.
-      source.src = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAr1tZGF0AAACrgYF//+q3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE2NCByMzA5NSBiYWVlNDAwIC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAyMiAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYWRzPTEgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIGJfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAAD2WIhAA3//728P4FNjuY0JcRzeidMx+/FvpUwAAAAwAAAwAK0jMKQZ6BgQAAAAoBnpi0XKQAWMMAAAAAHEGaRGxSEFsmUCCn/5l9BwAAAAMAAAMAAg4AAAAJQZ5iRTGiQAAeAAAACQGegUUxogAAHgAAAAkBnoNFMaIAAB4AAAAHQZqLUmoQWyZQAAAAAwAAAwACigAAAAlBnoRFFSo8AAAeAAAACQGeo0UVKgAAHgAAAAcBnqVFFSoAAB4AAAAHQZrNRRUqgAAAAwAAAwACigAAAAlBnutFESoQAB4AAAAJAZ8KUSoAAB4AAAAHAZ7MUSoQAB4';
-      video.appendChild(source);
-      video.play().catch(() => {});
-    })();
-
-    // --- Google Cast Receiver SDK -----------------------------------------
-    // Only relevant when this page is launched as a registered Cast "Custom
-    // Receiver" app (i.e. opened directly by a Chromecast, not a regular
-    // browser tab). Harmless no-op otherwise.
-    //
-    // disableIdleTimeout is the key setting here: by default CAF closes a
-    // receiver app shortly after it has no connected sender, which is
-    // exactly what happens right after our one-shot launcher script exits.
-    // Disabling that is what lets the app keep running indefinitely with no
-    // sender attached, so it survives the casting computer being turned off.
-    (function setupCastReceiver() {
-      if (!window.cast || !window.cast.framework) return;
-      try {
-        const context = cast.framework.CastReceiverContext.getInstance();
-        context.start({
-          disableIdleTimeout: true,
-          maxInactivity: 60 * 60 * 24 * 30 // 30 days, belt-and-suspenders
-        });
-      } catch (err) {
-        console.warn('Cast receiver context failed to start', err);
-      }
-    })();
   </script>
 </body>
 </html>

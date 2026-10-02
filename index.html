@@ -90,8 +90,8 @@
     bottom: -10%;
     border-radius: 50%;
     opacity: 0.22;
-    filter: blur(0.5px);
     animation: rise linear infinite;
+    will-change: transform, opacity;
   }
   @keyframes rise {
     0%   { transform: translateY(0) translateX(0); opacity: 0; }
@@ -103,10 +103,10 @@
   /* Floating science iconography around the edges of the screen */
   .float-icon {
     position: absolute;
-    filter: drop-shadow(0 0 14px var(--glow, rgba(255,255,255,0.5)));
     animation: bob var(--dur, 10s) ease-in-out infinite;
     opacity: 0.9;
     z-index: 0;
+    will-change: transform;
   }
   @keyframes bob {
     0%, 100% { transform: translate(0, 0) rotate(0deg); }
@@ -216,8 +216,7 @@
     font-size: clamp(28px, 4vw, 56px);
     font-weight: 700;
     color: var(--text);
-    background: rgba(255,255,255,0.07);
-    backdrop-filter: blur(6px);
+    background: rgba(20,35,58,0.75);
     border: 1px solid var(--accent, rgba(255,255,255,0.18));
     border-radius: 14px;
     padding: 0.3em 0.5em;
@@ -432,22 +431,28 @@
     // --- Colorful rising bubbles (purely decorative + anti-idle motion) ---
     (function spawnBubbles() {
       const host = document.getElementById('bubbles');
+      // Fewer bubbles, and glow baked into a radial-gradient background
+      // instead of a blurred box-shadow — box-shadow blur has to be
+      // recomputed every frame as the element moves, which is too heavy
+      // for the Chromecast's weak GPU and was causing visibly janky motion.
+      // A gradient background is rendered once and just translated, which
+      // is cheap even on weak hardware.
       const colors = ['#5c89b8', '#f5a623'];
-      const count = 16;
+      const count = 8;
       for (let i = 0; i < count; i++) {
         const b = document.createElement('div');
         b.className = 'bubble';
-        const size = 6 + Math.random() * 22;
+        const coreSize = 6 + Math.random() * 22;
+        const boxSize = coreSize * 3;
         const left = Math.random() * 100;
         const dur = 14 + Math.random() * 16;
         const delay = Math.random() * -30;
         const drift = (Math.random() * 120 - 60) + 'px';
         const color = colors[i % colors.length];
-        b.style.width = size + 'px';
-        b.style.height = size + 'px';
+        b.style.width = boxSize + 'px';
+        b.style.height = boxSize + 'px';
         b.style.left = left + 'vw';
-        b.style.background = color;
-        b.style.boxShadow = '0 0 ' + (size * 1.2) + 'px ' + color;
+        b.style.background = `radial-gradient(circle, ${color} 0%, ${color}88 25%, transparent 70%)`;
         b.style.setProperty('--drift', drift);
         b.style.animationDuration = dur + 's';
         b.style.animationDelay = delay + 's';
